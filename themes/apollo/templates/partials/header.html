@@ -81,6 +81,10 @@
         {% if config.extra.analytics.umami.website_id %}
             {% set website_id = config.extra.analytics.umami.website_id %}
             {% set host_url = config.extra.analytics.umami.host_url | default(value="https://analytics.eu.umami.is") %}
+            <!-- console log host_url -->
+            <script>
+                console.log("host_url: " + "{{ host_url }}");
+            </script>
 
             <script>
                 (function () {
