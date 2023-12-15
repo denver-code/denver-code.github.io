@@ -1,7 +1,6 @@
 +++
 title = "Cubecat/Кубокіт"
-date = "2023-12-15"
-description = "Chat-bot for italent.org.ua"
+description = "Chat-bot for italent.org.ua for helping moderators on iTalent on Discord and Telegram platforms."
 weight = 1
 [extra]
 local_image = "/projects/cubecat/cover.png"
