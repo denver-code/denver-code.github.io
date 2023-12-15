@@ -81,7 +81,7 @@
     {% if config.extra.analytics.enabled %}
         {% if config.extra.analytics.umami.website_id %}
             {% set website_id = config.extra.analytics.umami.website_id %}
-            {% set host_url = config.extra.analytics.umami.host_url | default(value="https://umami-azure-one.vercel.app/") %}
+            {% set host_url = config.extra.analytics.umami.host_url | default(value="https://umami-azure-one.vercel.app") %}
             <!-- console log host_url -->
             <script>
                 console.log("host_url: " + "{{ host_url }}");
