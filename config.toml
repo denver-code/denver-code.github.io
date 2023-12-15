@@ -31,4 +31,4 @@ enabled = true
 
 [extra.analytics.umami]
 website_id = "fa6a920f-db21-406a-afe7-5caf4db6c791"
-host_url = "https://umami-7smef0my8-denver-code.vercel.app/"
+host_url = "https:/umami-denver-code.vercel.app/"
