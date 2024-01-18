@@ -19,6 +19,7 @@ menu = [
     { name = "/projects", url = "/projects", weight = 2 },
     # { name = "/talks", url = "/talks", weight = 3 },
     { name = "/about", url = "/about", weight = 4 },
+    # { name = "/cv", url = "/cv", weight = 5 },
     # { name = "/news", url = "/news", weight = 5 },
     # { name = "/experiments", url = "/experiments", weight = 6 },
 ]

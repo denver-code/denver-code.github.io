@@ -1,7 +1,7 @@
 +++
 title = "Noto - No Tomorrow"
 description = "Noto (No Tomorrow) - this is a simple, minimalist application that will help you organize your workflow."
-weight = 1
+weight = 3
 [extra]
 local_image = "/projects/noto/cover.jpg"
 +++

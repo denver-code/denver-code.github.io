@@ -1,7 +1,7 @@
 +++
 title = "iTalentMC - Minecraft Server"
 description = "iTalentMC is a client for minecraft server of iTalent service, with platform integration. minecraft.italent.org.ua"
-weight = 1
+weight = 3
 [extra]
 local_image = "/projects/italentmc/image-1.png"
 +++
