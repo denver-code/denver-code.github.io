@@ -1,4 +1,4 @@
-base_url = "https://denver-code.github.io"
+base_url = "https://savenko.tech"
 title = "denver-code"
 build_search_index = true
 generate_feeds = true
