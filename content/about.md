@@ -20,5 +20,6 @@ I'm currenty studying Computer Science at the MET College, UK, England. In my sp
 Telegram: [https://t.me/operatorSilence](https://t.me/operatorSilence) <br />
 Github: [https://github.com/denver-code](https://github.com/denver-code) <br />
 Discord: operatorsilence <br />
+Email: csigorek@gmail.com
 
 I always enjoy a good conversation, so feel free to DM me anytime :)
