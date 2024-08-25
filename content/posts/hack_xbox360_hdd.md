@@ -7,7 +7,7 @@ I bet most people that been using xbox or gaming consoles at all have heard or b
 Yes, it’s that one legendary console from the past, and some people still use it now, but it has some cons that you might face while playing.
 One of them is internal storage, some of the Xbox 360 models have really small internal hard drive, and some even don’t have it like Arcade edition, or the seller just removed it for some reason.
 
-My xbox 360 didn’t have an HDD, so I thought I’m just gonna buy small used drive from one pf the local shops(CeX in my case, do not recommend to buy anything from them if you can afford something better, other wise be careful).
+My xbox 360 didn’t have an HDD, so I thought I’m just gonna buy small used drive from one pf the local shops(CeX in my case).
 And on the next day I bought 320GB drive for a couple of quids, but immediately noticed small damage and cracks on the top panel that can be removed, so it was opened and probably the HDD been changed.
 Now this is not a big deal as I knew that most of the 2.5” HDD’s and SDD’s will work fine, but I didn’t know that brand new clean drive might not be formatted in the right way that xbox wants.
 That was my case!
