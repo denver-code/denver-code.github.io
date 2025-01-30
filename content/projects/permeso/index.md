@@ -50,9 +50,17 @@ Which is a spam for those people in most cases, but even 1 sucessfull contact ou
 Unlikely you will be able to experience all features of the platform without subscription, so you can <a href="https://www.youtube.com/watch?v=t2iSe9blRu8">watch this video</a>  
 <iframe width="600" height="300" src="https://www.youtube.com/embed/t2iSe9blRu8" title="Permeso #4 | Redesign! | NextJS Firebase Fastapi Stripe  Shadcn/UI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
 
+Slighly update version:
+<iframe width="600" height="300" src="https://www.youtube.com/embed/gWflNJPjxhc" title="Permeso #4 | Redesign! | NextJS Firebase Fastapi Stripe  Shadcn/UI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
+
+
 - Production: [permeso.savenko.tech](https://permeso.savenko.tech)
 - Stage:  [dev.permeso.savenko.tech](https://dev.permeso.savenko.tech)
 
+# What's next?
+- A while after a fork of Permeso became a `Planning portal` that does exactly the same things but built for organisations that will be selling this data to the agencies. <iframe width="600" height="300" src="https://www.youtube.com/embed/CEdgkTXSbhI" title=" Planning Portal MVP Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
+- Also Permeso-portal are now open source, so you can check it out on [GitHub](https://github.com/denver-code/permeso-portal)
+- Stage and Production version will be merged into one (stage will be main) and will be separated from backend to demonstrate how it works and used as a demo for potential clients.
 
 # Source code
 Not publicaly available (*yet*, in case I'll decide to), but if you would like to get it or have a look at separate functions - let me know via email:  
