@@ -54,7 +54,7 @@ Slighly update version:
 <iframe width="600" height="300" src="https://www.youtube.com/embed/gWflNJPjxhc" title="Permeso #4 | Redesign! | NextJS Firebase Fastapi Stripe  Shadcn/UI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
 
 
-- Production: [[permeso.ihorsavenko.com](https://offline.permeso.ihorsavenko.com)](https://offline.permeso.ihorsavenko.com)
+- Production: [offline.permeso.ihorsavenko.com](https://offline.permeso.ihorsavenko.com)
 
 # What's next?
 - A while after a fork of Permeso became a `Planning portal` that does exactly the same things but built for organisations that will be selling this data to the agencies. <iframe width="600" height="300" src="https://www.youtube.com/embed/CEdgkTXSbhI" title=" Planning Portal MVP Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
