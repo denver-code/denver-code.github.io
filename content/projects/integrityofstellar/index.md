@@ -42,4 +42,4 @@ Quick Links:
 
 
 ## Want to know more?
-Refer to the [case study](https://savenko.tech/posts/integrityofstellar/) for analysis and some information.
+Refer to the [case study](https://ihorsavenko.com/posts/integrityofstellar/) for analysis and some information.

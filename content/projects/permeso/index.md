@@ -54,8 +54,8 @@ Slighly update version:
 <iframe width="600" height="300" src="https://www.youtube.com/embed/gWflNJPjxhc" title="Permeso #4 | Redesign! | NextJS Firebase Fastapi Stripe  Shadcn/UI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
 
 
-- Production: [permeso.savenko.tech](https://permeso.savenko.tech)
-- Stage:  [dev.permeso.savenko.tech](https://dev.permeso.savenko.tech)
+- Production: [permeso.ihorsavenko.com](https://permeso.ihorsavenko.com)
+- Stage:  [dev.permeso.ihorsavenko.com](https://dev.permeso.ihorsavenko.com)
 
 # What's next?
 - A while after a fork of Permeso became a `Planning portal` that does exactly the same things but built for organisations that will be selling this data to the agencies. <iframe width="600" height="300" src="https://www.youtube.com/embed/CEdgkTXSbhI" title=" Planning Portal MVP Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>  
@@ -64,5 +64,5 @@ Slighly update version:
 
 # Source code
 Not publicaly available (*yet*, in case I'll decide to), but if you would like to get it or have a look at separate functions - let me know via email:  
-`ihor@savenko.tech` or `csigorek@gmail.com`  
+`contact@ihorsavenko.com` or `csigorek@gmail.com`  
 Please include as much details as you can about you, your company(if applicable) and reason of interest. 

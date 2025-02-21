@@ -22,6 +22,6 @@ In my spare time I enjoy working on side projects, contributing to open source, 
 Telegram: [https://t.me/operatorSilence](https://t.me/operatorSilence) <br />
 Github: [https://github.com/denver-code](https://github.com/denver-code) <br />
 Discord: operatorsilence <br />
-Email: csigorek@gmail.com, ihor@savenko.tech
+Email: contact@ihorsavenko.com or csigorek@gmail.com
 
 I always enjoy a good conversation, so feel free to DM me anytime :)
