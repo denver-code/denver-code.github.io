@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>denver-code</title>
+    <link rel="self" type="application/atom+xml" href="https://ihorsavenko.com/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://ihorsavenko.com"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-02-27T00:00:00+00:00</updated>
+    <id>https://ihorsavenko.com/atom.xml</id>
+    <entry xml:lang="en">
+        <title>What happens when you push your Firebase API key to GitHub</title>
+        <published>2025-02-27T00:00:00+00:00</published>
+        <updated>2025-02-27T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/insecure-firebase/"/>
+        <id>https://ihorsavenko.com/posts/insecure-firebase/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/insecure-firebase/">&lt;p&gt;Recently I&#x27;ve been working on a new project, and decided to get some inspiration from public repositories on GitHub.&lt;br &#x2F;&gt;
+I&#x27;ve found a repository with a code for Android app, based on game called &lt;code&gt;Death Stranding&lt;&#x2F;code&gt;, and as a fan of this game - decided to clone it and run it.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;README.md&lt;&#x2F;code&gt; file was very clear, however it had installation via &lt;code&gt;npm&lt;&#x2F;code&gt; while we have to use &lt;code&gt;gradle&lt;&#x2F;code&gt; for Android projects, last commit was like few months ago, it had a release but with code only.&lt;br &#x2F;&gt;
+Long story short, I&#x27;ve cloned the repository, opened it in Android Studio, and tried to run it, id did it without any issues, a Authorization screen appeared.&lt;br &#x2F;&gt;
+At this point I thought that was it, as I didn&#x27;t want to create new Firebase project and connect it to this app, but then I&#x27;ve noticed that there&#x27;s a &lt;code&gt;google-services.json&lt;&#x2F;code&gt; file in the project.
+Normally it&#x27;s okay, because you can reverse engineer the APK to get them, however it contained all of the API keys, and I got curious what will happen if I use them.&lt;&#x2F;p&gt;
+&lt;p&gt;Straight away new &lt;code&gt;python&lt;&#x2F;code&gt; script was created, which was sending a request to Firebase API:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;python&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-python &quot;&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;requests
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;API_KEY &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;SOME_API_KEY&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;DATABASE_URL &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;https:&#x2F;&#x2F;gg.europe-west1.firebasedatabase.app&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;sign_in_anonymously&lt;&#x2F;span&gt;&lt;span&gt;():
+&lt;&#x2F;span&gt;&lt;span&gt;    url &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;https:&#x2F;&#x2F;identitytoolkit.googleapis.com&#x2F;v1&#x2F;accounts:signUp?key=&lt;&#x2F;span&gt;&lt;span&gt;{API_KEY}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    response &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;requests&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;post&lt;&#x2F;span&gt;&lt;span&gt;(url&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt;{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;returnSecureToken&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;True&lt;&#x2F;span&gt;&lt;span&gt;})
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;response&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;status_code &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;200&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;response&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span&gt;()[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;idToken&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;None
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;id_token &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;sign_in_anonymously&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07178;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;ID Token:&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;id_token)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After running this script, I&#x27;ve got a response with &lt;code&gt;idToken&lt;&#x2F;code&gt;, which was a valid token for this Firebase project.&lt;&#x2F;p&gt;
+&lt;p&gt;That&#x27;s it, we have read&#x2F;write access to the Firebase database, and we can do whatever we want with it.&lt;&#x2F;p&gt;
+&lt;p&gt;Let&#x27;s extend this script to pull all of the data from the database:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;python&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-python &quot;&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;get_data&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;node&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;id_token&lt;&#x2F;span&gt;&lt;span&gt;):
+&lt;&#x2F;span&gt;&lt;span&gt;    url &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;{DATABASE_URL}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;{node}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;.json?auth=&lt;&#x2F;span&gt;&lt;span&gt;{id_token}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    response &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;requests&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(url)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;response&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span&gt;() &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;response&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;status_code &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;200 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;response&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;text
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;nodes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;get_data&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;id_token)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;node &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;in &lt;&#x2F;span&gt;&lt;span&gt;nodes:
+&lt;&#x2F;span&gt;&lt;span&gt;    write_data &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;get_data&lt;&#x2F;span&gt;&lt;span&gt;(node&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;id_token)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;with &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07178;&quot;&gt;open&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;data_&lt;&#x2F;span&gt;&lt;span&gt;{node}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;.json&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;w&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;as &lt;&#x2F;span&gt;&lt;span&gt;f:
+&lt;&#x2F;span&gt;&lt;span&gt;        write_data &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(
+&lt;&#x2F;span&gt;&lt;span&gt;            {key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span&gt;value &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;value &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;in &lt;&#x2F;span&gt;&lt;span&gt;write_data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span&gt;()}
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07178;&quot;&gt;isinstance&lt;&#x2F;span&gt;&lt;span&gt;(write_data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;dict&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;write_data
+&lt;&#x2F;span&gt;&lt;span&gt;        )
+&lt;&#x2F;span&gt;&lt;span&gt;        f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;write&lt;&#x2F;span&gt;&lt;span&gt;(json&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;dumps&lt;&#x2F;span&gt;&lt;span&gt;(write_data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;indent&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt;))
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07178;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;Data saved to data_&lt;&#x2F;span&gt;&lt;span&gt;{node}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;.json&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;execution:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Data&lt;&#x2F;span&gt;&lt;span&gt; saved to data_deliveries.json
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Data&lt;&#x2F;span&gt;&lt;span&gt; saved to data_post_offices.json
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Data&lt;&#x2F;span&gt;&lt;span&gt; saved to data_signals.json
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Data&lt;&#x2F;span&gt;&lt;span&gt; saved to data_users.json
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Data&lt;&#x2F;span&gt;&lt;span&gt; saved to data_weather.json
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Data&lt;&#x2F;span&gt;&lt;span&gt; saved to data_weatherCurrentInApp.json
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After running this script, we will have all of the data from the Firebase database saved in separate files.
+Here&#x27;s some example data from &lt;code&gt;data_users.json&lt;&#x2F;code&gt;(personal data was removed):&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;json&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-json &quot;&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;8AvbIz4G5BWS____REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;bloodType&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;deliveries&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;distanceWalked&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;dob&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;height&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;name&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;photoUrl&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;timefallExposure&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;weight&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    }&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;8DBp4bNCibfp____REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;bloodType&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;deliveries&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;distanceWalked&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;dob&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;height&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;name&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;photoUrl&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;timefallExposure&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;weight&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;REDACTED&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    }&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;From &lt;code&gt;data_signals.json&lt;&#x2F;code&gt; we could&#x27;ve se latitudes and longitudes of some user-generated signals, some of them correspond to the developers home location.&lt;&#x2F;p&gt;
+&lt;p&gt;While you can push your &lt;code&gt;google-services.json&lt;&#x2F;code&gt; to GitHub, you should properly secure your Firebase project and restrict access to it, as it&#x27;s very easy to get access to it.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>HomeLab 2.0</title>
+        <published>2024-12-26T00:00:00+00:00</published>
+        <updated>2024-12-26T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/homelab2/"/>
+        <id>https://ihorsavenko.com/posts/homelab2/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/homelab2/">&lt;p&gt;Long story short, few months ago I&#x27;ve upgraded my home server and now I&#x27;m ready to share my new setup with you.&lt;&#x2F;p&gt;
+&lt;p&gt;Now just a quick &lt;code&gt;disclaimer&lt;&#x2F;code&gt;, I&#x27;m not an expert in DevOps and System Administration stuff, so I might do something wrong.&lt;&#x2F;p&gt;
+&lt;p&gt;Let&#x27;s go through main components of my HomeLab 2.0.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;hardware&quot;&gt;Hardware&lt;&#x2F;h2&gt;
+&lt;p&gt;This server runs on a new Custom built Full Tower PC :&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Intel Core i5-12400F&lt;&#x2F;li&gt;
+&lt;li&gt;16GB RAM DDR4 3200MHz&lt;&#x2F;li&gt;
+&lt;li&gt;GTX 745 (just for display)&lt;&#x2F;li&gt;
+&lt;li&gt;M.2 NVMe 512GB (for OS and VMs)&lt;&#x2F;li&gt;
+&lt;li&gt;2x 2TB HDD (for data storage)&lt;&#x2F;li&gt;
+&lt;li&gt;2x 1TB HDD (for backups, ZFS NAS)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;software&quot;&gt;Software&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Proxmox VE 8.2.2 (Hypervisor)
+&lt;ul&gt;
+&lt;li&gt;TrueNAS Scale 24.04 (NAS + Services)
+&lt;ul&gt;
+&lt;li&gt;Immich for photo backup&#x27;s and sharing&lt;&#x2F;li&gt;
+&lt;li&gt;MeTube for youtube video downloading&lt;&#x2F;li&gt;
+&lt;li&gt;Tailscale to remote access my NAS and Services&lt;&#x2F;li&gt;
+&lt;li&gt;Vaultwarden for password management&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Ubuntu 22.04
+&lt;ul&gt;
+&lt;li&gt;Docker for running servers&#x2F;databases for my pet projects&lt;&#x2F;li&gt;
+&lt;li&gt;Wireguard for VPN access&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;NetData for monitoring&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;what-s-better-now&quot;&gt;What&#x27;s better now?&lt;&#x2F;h2&gt;
+&lt;p&gt;Well, not I have a lot more resources and flexibility thanks to PC (you can easily upgrade it) and Proxmox (you can easily manage VMs and Containers).&lt;&#x2F;p&gt;
+&lt;p&gt;For a moment I had thoughts that current setup is overkill for my needs, but then I realized that I can easily scale it up or down, and it&#x27;s a good thing to have a lot of resources for future projects, I absolutely love idea of dynamic creation of virtual machines.&lt;&#x2F;p&gt;
+&lt;p&gt;However instead of using this complex setup I could just use a standalone linux server with docker, RAID and sharing services, but I wanted to learn more about virtualization, networking and highly scalable so I decided to go with this setup.&lt;&#x2F;p&gt;
+&lt;p&gt;I can remotely access my TrueNAS services using Tailscale, and to access VMs I&#x27;m using Wireguard VPN.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;area-for-improvements-and-research&quot;&gt;Area for improvements and research&lt;&#x2F;h2&gt;
+&lt;p&gt;At this moment I&#x27;m happy with my setup, however I&#x27;m not sure how much power it consumes, however I&#x27;m not running it 24&#x2F;7 and most of the time it&#x27;s in Idle state.&lt;&#x2F;p&gt;
+&lt;p&gt;Also 16GB of RAM is definitely minimum for this setup, I&#x27;m planning to upgrade it to 32GB in the future, most of the time it fine, but when there&#x27;s some activity on the HDD - ZFS starts to consume a lot of RAM for caching.&lt;br &#x2F;&gt;
+&lt;img alt=&quot;homelab setup&quot; async src=&quot;homelab2.png&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Reverse engineering .NET WPF Pacman using dnSpy</title>
+        <published>2024-09-15T00:00:00+00:00</published>
+        <updated>2024-09-15T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/moddingpacman/"/>
+        <id>https://ihorsavenko.com/posts/moddingpacman/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/moddingpacman/">&lt;p&gt;&lt;strong&gt;Reverse-engineering&lt;&#x2F;strong&gt; - is the act of dismantling an object to see how it works. It is done primarily to analyze and gain knowledge about the way something works but often is used to duplicate or enhance the object.&lt;&#x2F;p&gt;
+&lt;p&gt;Watch on youtube - &lt;a href=&quot;https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v=5Nqgh85c3JI&quot;&gt;https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v=5Nqgh85c3JI&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;level-easy&quot;&gt;Level - &lt;strong&gt;easy&lt;&#x2F;strong&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;In today&#x27;s episode we are going to reverse engineer and modify an simple game written in C# .NET WPF.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;pacman.png&quot; alt=&quot;pacman&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;You are pacman (yellow guy), you can move in 4 directions (top, down, left, right), earn coins by eating them, winning by collecting 84 coins in total, however you can get eaten by one of the &lt;strong&gt;ghosts&lt;&#x2F;strong&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It&#x27;s a straightforward gameplay, but we&#x27;re IT guys, which means we can bypass certain mechanics.&lt;br &#x2F;&gt;
+And in this case we&#x27;re going to:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Disable dying&lt;&#x2F;li&gt;
+&lt;li&gt;Increse the amount of points out of the coins&lt;&#x2F;li&gt;
+&lt;li&gt;Enable eating of ghosts&lt;&#x2F;li&gt;
+&lt;li&gt;Enable flying through walls&lt;&#x2F;li&gt;
+&lt;li&gt;Add text that we have modded it (leaving credit - important step haha)&lt;&#x2F;li&gt;
+&lt;li&gt;Make main player faster&lt;&#x2F;li&gt;
+&lt;li&gt;Make Ghosts edible, so we can earn some points of them too!&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;We will achieve this by using cool piece of software called &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;dnSpy&#x2F;dnSpy&quot;&gt;&lt;code&gt;dnSpy&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; (discontinued but well made fork of ILSpy).&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;stage-1-getting-source-code&quot;&gt;Stage 1 - Getting source code&lt;&#x2F;h1&gt;
+&lt;p&gt;&lt;strong&gt;Compiling&lt;&#x2F;strong&gt; is the process of converting human-readable code into machine-readable code. This is usually done by a software program called a compiler, which takes the source code and translates it into executable instructions for the computer to carry out.&lt;&#x2F;p&gt;
+&lt;p&gt;By doing &lt;strong&gt;reverse engineering&lt;&#x2F;strong&gt; we likely won&#x27;t be able to get the initial code base, as after compiling some bits was replaced by something else, something was mooved, etc.&lt;&#x2F;p&gt;
+&lt;p&gt;But we still will be able to get most of the data that we need to amend changes.&lt;&#x2F;p&gt;
+&lt;p&gt;So let&#x27;s dive into it, open up the &lt;code&gt;dnSpy&lt;&#x2F;code&gt; (x64&#x2F;x32 depending on the application) and simply drag&#x27;n drop the &lt;code&gt;.exe&lt;&#x2F;code&gt; file of the game to the &lt;code&gt;dnSpy&lt;&#x2F;code&gt; and you should see something like this:&lt;br &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;dnspy1.png&quot; alt=&quot;alt dnspy1&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here you will need to find the Main class of the application, and from here you will be able to navigate through and find required place to do the changes.&lt;br &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;structure.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;br &#x2F;&gt;
+Here you can see all the game logic and variables, as it is very small.&lt;&#x2F;p&gt;
+&lt;p&gt;You can click at each thing in this list and you should be able to see the code:&lt;br &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;collisions.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;br &#x2F;&gt;
+For example the collisions part.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;)rectangle&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Tag &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;wall&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goLeft &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect))
+&lt;&#x2F;span&gt;&lt;span&gt;    {
+&lt;&#x2F;span&gt;&lt;span&gt;        Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;SetLeft&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;GetLeft&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;noLeft &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goLeft &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;false&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goRight &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect))
+&lt;&#x2F;span&gt;&lt;span&gt;    {
+&lt;&#x2F;span&gt;&lt;span&gt;        Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;SetLeft&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;GetLeft&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;- &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;noRight &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goRight &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;false&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goDown &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect))
+&lt;&#x2F;span&gt;&lt;span&gt;    {
+&lt;&#x2F;span&gt;&lt;span&gt;        Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;SetTop&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;GetTop&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;- &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;noDown &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goDown &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;false&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goUp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect))
+&lt;&#x2F;span&gt;&lt;span&gt;    {
+&lt;&#x2F;span&gt;&lt;span&gt;        Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;SetTop&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;Canvas&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;GetTop&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacman) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;noUp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;goUp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;false&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;stage-2-amending-modifications&quot;&gt;Stage 2 - Amending modifications&lt;&#x2F;h1&gt;
+&lt;p&gt;Now we&#x27;re going to disable collisions with the walls, let&#x27;s simply delete the code block that you&#x27;ve seen before by Right-clicking at the code and then selecting &lt;code&gt;&quot;Edit Method&quot;&lt;&#x2F;code&gt;:&lt;br &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;editcols.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;br &#x2F;&gt;
+Now select code that you&#x27;d like to remove and press &lt;code&gt;&quot;backspace&quot;&lt;&#x2F;code&gt; button on your keyboard to delete it, click &lt;code&gt;&quot;Compile&quot;&lt;&#x2F;code&gt; if that&#x27;s all changes you&#x27;d like to do to save changes.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;changing-score-system&quot;&gt;Changing score system&lt;&#x2F;h2&gt;
+&lt;p&gt;Going further I&#x27;ve found the score incrementation logic:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;)rectangle&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Tag &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;coin&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span&gt;rectangle&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Visibility &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span&gt;Visibility&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Visible)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    rectangle&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Visibility &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;Visibility&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Hidden&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;score&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Let&#x27;s fix it, and increase score by &lt;code&gt;50&lt;&#x2F;code&gt; each time when we &lt;em&gt;eat&lt;&#x2F;em&gt; the coin by changing logic to:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;score &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;50&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;and that&#x27;ll do.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;disable-dying-and-gettin-score-out-of-ghosts&quot;&gt;Disable dying and gettin score out of ghosts&lt;&#x2F;h2&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect))
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;GameOver&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;Well better luck next time!&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Going to be:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;pacmanHitBox&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;IntersectsWith&lt;&#x2F;span&gt;&lt;span&gt;(rect))
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    rectangle&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Visibility &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;Visibility&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Hidden&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;	&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;score &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;200&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And by doing that - our score will be incremented by 200 each time when we eat a ghost.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;leaving-a-credit&quot;&gt;Leaving a credit&lt;&#x2F;h2&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;txtScore&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Content &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;Score: &amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;score&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;ToString&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;-&amp;gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;txtScore&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;Content &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;Score: &amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#39bae6;&quot;&gt;this&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;score&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;ToString&lt;&#x2F;span&gt;&lt;span&gt;() &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#c2d94c;&quot;&gt;&amp;quot;Mod by @denver-code&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;changing-speeds&quot;&gt;Changing speeds&lt;&#x2F;h2&gt;
+&lt;p&gt;Once you&#x27;ve found variables of the app:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;private int &lt;&#x2F;span&gt;&lt;span&gt;speed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;private int &lt;&#x2F;span&gt;&lt;span&gt;ghostSpeed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You can change them too:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c#&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-c# &quot;&gt;&lt;code class=&quot;language-c#&quot; data-lang=&quot;c#&quot;&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;private int &lt;&#x2F;span&gt;&lt;span&gt;speed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;15&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff7733;&quot;&gt;private int &lt;&#x2F;span&gt;&lt;span&gt;ghostSpeed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29668;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bfbab0cc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;stage-3-saving&quot;&gt;Stage 3 - saving&lt;&#x2F;h1&gt;
+&lt;p&gt;After you are happy will all the changes, smash that save button:&lt;br &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;save.png&quot; alt=&quot;save&quot; &#x2F;&gt;&lt;br &#x2F;&gt;
+And export your cracked pacman game!&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;moddingpacman&#x2F;cracked.png&quot; alt=&quot;alt text&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Integrity of Stellar | Case Study</title>
+        <published>2024-09-10T00:00:00+00:00</published>
+        <updated>2024-09-10T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/integrityofstellar/"/>
+        <id>https://ihorsavenko.com/posts/integrityofstellar/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/integrityofstellar/">&lt;h1 id=&quot;integrity-of-stellar&quot;&gt;Integrity of Stellar&lt;&#x2F;h1&gt;
+&lt;p&gt;IoS - Virtual Aerospace Agency with the city on Mars&lt;&#x2F;p&gt;
+&lt;p&gt;Main idea of the project is to create a virtual aerospace agency that will provide an opportunity to explore the universe and the city on Mars to everyone who has a computer or a smartphone.&lt;&#x2F;p&gt;
+&lt;p&gt;Our mission is to democratize access to cutting-edge space technology and exploration tools. Through innovative projects and collaborations, we aim to push the boundaries of what is possible in space exploration and beyond.
+Our Current Projects:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;The Universe Vault - portal that contains information about our planets, moons, solar-systems, stars, galaxies in The Universe&lt;&#x2F;li&gt;
+&lt;li&gt;StellarNet: Our unique space network that connects different regions of the universe with advanced relays and stations, enabling seamless communication and exploration.&lt;&#x2F;li&gt;
+&lt;li&gt;StellarCity: A bustling metropolis on Mars, serving as the hub of our operations and a symbol of humanity&#x27;s potential for interplanetary living.&lt;&#x2F;li&gt;
+&lt;li&gt;Game Development: We are currently developing an exciting new game where players take on the role of an important agency space operator, exploring the universe, discovering its secrets, and expanding the StellarNet network.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Our Goals&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Innovate: Continuously develop and integrate the latest space technology into our projects.&lt;&#x2F;li&gt;
+&lt;li&gt;Educate: Provide educational resources and interactive experiences to inspire the next generation of space enthusiasts.&lt;&#x2F;li&gt;
+&lt;li&gt;Collaborate: Foster a community of like-minded individuals and organizations to share knowledge and achieve common goals.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;tech-stack&quot;&gt;Tech Stack&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Blender&lt;&#x2F;li&gt;
+&lt;li&gt;Davinci Resolve&lt;&#x2F;li&gt;
+&lt;li&gt;Zola&lt;&#x2F;li&gt;
+&lt;li&gt;Python&lt;&#x2F;li&gt;
+&lt;li&gt;Next.js&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;stellarcity&quot;&gt;StellarCity&lt;&#x2F;h2&gt;
+&lt;p&gt;StellarCity is a city on Mars that is built by the agency and is a place where you can live, work, and explore the universe, all you have to do is subscribe to the agency Instagram or Youtube channel and your journey will begin.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;1-follower-1-house-and-citizen-stellarian-of-stellarcity&quot;&gt;&lt;em&gt;1 follower = 1 house and citizen (Stellarian) of StellarCity&lt;&#x2F;em&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Quick Links:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.instagram.com&#x2F;integrityofstellar&#x2F;&quot;&gt;Instagram&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.youtube.com&#x2F;@IntegrityofStellar&#x2F;&quot;&gt;Youtube&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;integrityofstellar&quot;&gt;Github&lt;&#x2F;a&gt; - well because I&#x27;m a developer and I like to have a repository for everything xD&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;case-study&quot;&gt;Case Study&lt;&#x2F;h2&gt;
+&lt;p&gt;Project was started on 19th of March 2024, and was &#x27;closed&#x27; 52 days later(technically later because I&#x27;ve still posted a few videos in different format) on 9th of May 2024.&lt;&#x2F;p&gt;
+&lt;p&gt;During life of the project - 56 videos were produced, and &lt;code&gt;20k&lt;&#x2F;code&gt; followers were gained on Instagram. and around &lt;code&gt;300&lt;&#x2F;code&gt; on Youtube.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;timeline&quot;&gt;Timeline&lt;&#x2F;h3&gt;
+&lt;p&gt;Due to the kind of a following model (you have to subscribe to help city grow) the followers were growing rapidly, and the project was gaining more and more attention.&lt;br &#x2F;&gt;
+But the highest growth was between day 7 and 25:
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;integrityofstellar&#x2F;7-25.png&quot; alt=&quot;Day 7 to 25 chart&quot; &#x2F;&gt;
+New &lt;code&gt;17.5k&lt;&#x2F;code&gt; followers were gained during this period.&lt;&#x2F;p&gt;
+&lt;p&gt;This was a massive wave of new people, no one expected that the project will grow so fast.&lt;&#x2F;p&gt;
+&lt;p&gt;Here is a graph of the followers during the whole project:
+&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;integrityofstellar&#x2F;graph.png&quot; alt=&quot;Graph chart of the followers&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I had to make a &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;integrityofstellar&#x2F;stellarcitytracker-cli&quot;&gt;small application&lt;&#x2F;a&gt; to track the followers, because it was hard to do it manually after the first week.&lt;br &#x2F;&gt;
+Here is an example of the usage of the application:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#0f1419;color:#bfbab0;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;»&lt;&#x2F;span&gt;&lt;span&gt; python main.py 16719 203
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Statistic&lt;&#x2F;span&gt;&lt;span&gt; for day 22 saved successfully
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Total:&lt;&#x2F;span&gt;&lt;span&gt; 16922 (+500)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Instagram:&lt;&#x2F;span&gt;&lt;span&gt; 16719 (+250)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffb454;&quot;&gt;Youtube:&lt;&#x2F;span&gt;&lt;span&gt; 203 (+250)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h4 id=&quot;more-and-more-people-and-ideas&quot;&gt;More and more people and ideas&lt;&#x2F;h4&gt;
+&lt;p&gt;During the project I&#x27;ve received a lot of messages, and ideas from the followers, and I&#x27;ve decided to implement some of them:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I&#x27;ve started a small contest for the best idea for the new building in StellarCity&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Over the first week of the project people received custom houses, castles, art studios, rocket pods, simply put a flag on the house and many more&lt;&#x2F;p&gt;
+&lt;p&gt;However at some point I had to stop this, because it was hard to keep up with the demand and some of the ideas were too complex to implement or simply (absurd) didn&#x27;t fit the city.&lt;br &#x2F;&gt;
+Example of these not fitting ideas:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;A house with a pool&lt;&#x2F;li&gt;
+&lt;li&gt;Eiffel Tower&lt;&#x2F;li&gt;
+&lt;li&gt;Big Ben Tower&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Custom Businesses. Big city == a lot of habitats, people need entertainment, some way to make money. So Stellarians were able to create their own businesses in the city, and I&#x27;ve decided to implement a few of them, and they were:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Coffee Shop&lt;&#x2F;li&gt;
+&lt;li&gt;Bakery&lt;&#x2F;li&gt;
+&lt;li&gt;Bookstore&lt;&#x2F;li&gt;
+&lt;li&gt;Art Studio&lt;&#x2F;li&gt;
+&lt;li&gt;Rocket Pod&lt;&#x2F;li&gt;
+&lt;li&gt;Observatory&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;This was a great idea, and I&#x27;ve decided to keep it for the future, and I&#x27;m planning to implement more businesses in the city, to keep it more alive.&lt;&#x2F;p&gt;
+&lt;p&gt;The process of creating a business was simple, you had to submut the google form with the idea, all details and the Instagram page(where you will post about your business), then once idea was acceped and implemented - it was added to the city map, and received unique TAX number, and the owner was able to start making money.&lt;&#x2F;p&gt;
+&lt;p&gt;I did&#x27;t want to make it too complex, but didn&#x27;t want to use spreadsheets, so I&#x27;ve created a &lt;a href=&quot;https:&#x2F;&#x2F;stellarcity-db.vercel.app&#x2F;firms&#x2F;&quot;&gt;small website&lt;&#x2F;a&gt; using Zola that was showing all businesses, and their TAX numbers, etc&lt;&#x2F;p&gt;
+&lt;p&gt;At this point I&#x27;ve had massive inspiration and will to keep the project alive, and scale it up, so the website was inteded to be a place where people can see all businesses, manage it, and see the city map, read the news, etc. But it didn&#x27;t happen.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;ihorsavenko.com&#x2F;posts&#x2F;integrityofstellar&#x2F;amionmars.png&quot; alt=&quot;amionmars&quot; &#x2F;&gt;
+As there was high growing trends - a lot of people were expecting to get their house right now and right here, so the &lt;a href=&quot;https:&#x2F;&#x2F;amionmars.vercel.app&#x2F;&quot;&gt;new website&lt;&#x2F;a&gt; (yes again!) was created, where people were able to see the progress of their traveling&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;going-to-aurora&quot;&gt;Going to Aurora&lt;&#x2F;h3&gt;
+&lt;p&gt;The project was growing, I had to keep up with the demand, and we found the new planet - Aurora(the name was chosen by the followers) that lately was explored by the agency, and volunteers from StellarCity.&lt;br &#x2F;&gt;
+&lt;img alt=&quot;Aurora&quot; async src=&quot;aurora.png&quot; width=&quot;250px&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;audience&quot;&gt;Audience&lt;&#x2F;h3&gt;
+&lt;p&gt;The audience was mostly young people(kids), who were interested in space, and wanted to be a part of something big, and they were:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;60% from the US (for some reason)&lt;&#x2F;li&gt;
+&lt;li&gt;37% from Europe&lt;&#x2F;li&gt;
+&lt;li&gt;3% from the other parts of the world&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Ages:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;10-15 - 35%&lt;&#x2F;li&gt;
+&lt;li&gt;18-25 - 50%&lt;&#x2F;li&gt;
+&lt;li&gt;25+ - 15%&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Overall the project was a success, and I&#x27;m happy that I&#x27;ve started it.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Hacking Xbox 360 HDD</title>
+        <published>2024-01-18T00:00:00+00:00</published>
+        <updated>2024-01-18T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/hack-xbox360-hdd/"/>
+        <id>https://ihorsavenko.com/posts/hack-xbox360-hdd/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/hack-xbox360-hdd/">&lt;p&gt;I bet most people that been using xbox or gaming consoles at all have heard or been using xbox 360.
+Yes, it’s that one legendary console from the past, and some people still use it now, but it has some cons that you might face while playing.
+One of them is internal storage, some of the Xbox 360 models have really small internal hard drive, and some even don’t have it like Arcade edition, or the seller just removed it for some reason.&lt;&#x2F;p&gt;
+&lt;p&gt;My xbox 360 didn’t have an HDD, so I thought I’m just gonna buy small used drive from one pf the local shops(CeX in my case).
+And on the next day I bought 320GB drive for a couple of quids, but immediately noticed small damage and cracks on the top panel that can be removed, so it was opened and probably the HDD been changed.
+Now this is not a big deal as I knew that most of the 2.5” HDD’s and SDD’s will work fine, but I didn’t know that brand new clean drive might not be formatted in the right way that xbox wants.
+That was my case!
+When drive is connected to the xbox via internal SATA slot it won’t appear in the “Storage” settings, however when you disconnect it - xbox will reboot, so it can see my drive and I possibly can fix it.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;let-s-try-to-format-it&quot;&gt;Let’s try to format it&lt;&#x2F;h2&gt;
+&lt;p&gt;My first step was just format it from NTFS to ExFat and try like this - but no success.
+Then I tries to format it to Fat32 and change to the MBR from GPT - no success, even with ExFat.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;learning-about-xbox-drive-structure&quot;&gt;Learning about Xbox drive structure&lt;&#x2F;h2&gt;
+&lt;p&gt;In short terms xbox can use only ExFat and Fat32 drives with right formatting, and essential Security Sectors value.
+That means you have to manually change addresses of the drive, which depends on the drive size in case to make security sector.
+While you have option to do it manually on xbox itself using serial number on options, your drive should be in the right format anyway, so that not a solution.
+Second option is to connect your drive using SATA to USB adapter, and then format as a external flash drive with only 32GB, even if you have more rest of the space won’t be used and security sectors won’t be set, so not a solution either unfortunately.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;exploring-tutorials&quot;&gt;Exploring tutorials&lt;&#x2F;h2&gt;
+&lt;p&gt;Now exploring tutorials and wiki’s for that question will be problematic as most of them simply outdated (10+ years)
+And of the all tutorials ways to fix it was:
+Using HDDHACKR and Security Sector dump file to format hdd in the right way.
+Now there’s a problem:
+You need to have right Western Digital hard drive so hddhackr can “hack” it properly.
+And then comes another fun dependency - it works only on MS-DOS or Free-DOS which means you should have “old” pc because my laptop doesn’t have legacy bios option, and do not have option to connect drives as ATA IDE mode. And also doesn’t have an SATA slot to connect this drive so even with right BIOS mode I won’t be able to reproduce tutorial steps.&lt;&#x2F;p&gt;
+&lt;p&gt;Maybe I can do it through virtual box, but I haven’t tried as I found that there’s some apps that can do the same but without using deprecated OS. I didn’t wondered as I knew there’s should be some way to do it from Windows&#x2F;Linux, so I found two tools:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;XPlorer 360 Extreme 2&lt;&#x2F;li&gt;
+&lt;li&gt;FATXplorer&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;And what helped me is FATXplorer, you will need to flash right security sector to your drive or clone from existing installed Xbox360 HDD, and then format it using FATXplorer.
+After that you will be able to format it on Xbox360 itself and use it as a normal drive.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>HomeLab #1</title>
+        <published>2023-12-20T00:00:00+00:00</published>
+        <updated>2023-12-20T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/homelab/"/>
+        <id>https://ihorsavenko.com/posts/homelab/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/homelab/">&lt;p&gt;Hey, this is my second post, and I&#x27;m going to talk about my homelab in this HomeLab series.&lt;br &#x2F;&gt;
+Because I think anyone who making some projects should have or at least know try to use a homelab because it gives you completly new experience and opportunities.&lt;&#x2F;p&gt;
+&lt;p&gt;Now just a quick &lt;code&gt;disclaimer&lt;&#x2F;code&gt;, I&#x27;m not an expert in DevOps and System Administration stuff, so I might do something wrong, but I&#x27;m trying to learn and improve my skills, so if you have any suggestions or recommendations please let me know via github issues, email or telegram.&lt;&#x2F;p&gt;
+&lt;p&gt;Also my homelab consists of only one server(laptop) at this stage, so it&#x27;s not a &#x27;complete&#x27; homelab, but I&#x27;m planning to upgrade it in the future.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;hardware&quot;&gt;Hardware&lt;&#x2F;h2&gt;
+&lt;p&gt;At the moment I have only one server, but considering to upgrade in the future.
+This server runs on my old laptop HP EliteBook G5 840 which has:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Intel Core i7-8550U (8) @ 4.000GHz&lt;&#x2F;li&gt;
+&lt;li&gt;Intel UHD Graphics 620&lt;&#x2F;li&gt;
+&lt;li&gt;16GB RAM&lt;&#x2F;li&gt;
+&lt;li&gt;SSD KXG50ZNV256G TOSHIBA&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;And as it was a normal laptop that I used for work it has &lt;code&gt;Windows 11&lt;&#x2F;code&gt; installed on it as well as &lt;code&gt;Fedora Linux 38(Server Edition)&lt;&#x2F;code&gt; as a &lt;code&gt;dual boot&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It all located in my room on the working desk and connected to the router via WiFi as I don&#x27;t have an ethernet cable in my room.&lt;br &#x2F;&gt;
+&lt;img alt=&quot;all parts&quot; async src=&quot;overall_server_setup.jpeg&quot; width=&quot;250px&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;And it looks quite well and clean for me, but if I will upgrade architecture then I will move it to the garage(might affect on internet connection) or pantry, best thing here is cable management:&lt;br &#x2F;&gt;
+&lt;img alt=&quot;cable management&quot; async src=&quot;cable_management.jpeg&quot; width=&quot;250px&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Desk:&lt;br &#x2F;&gt;
+&lt;img alt=&quot;desk&quot; async src=&quot;desk.jpeg&quot; width=&quot;250px&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;additional-hardware&quot;&gt;Additional Hardware&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;External Samsung SSD 860 PRO (256GB) - which is using for small backups and running some containers that need to be fast.&lt;&#x2F;li&gt;
+&lt;li&gt;External HDD WD My Book Duo (3TB + 3TB in Mirror Raid (1)) - which is using for storing old photos and videos as well as backups, music, and some other stuff.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;software&quot;&gt;Software&lt;&#x2F;h2&gt;
+&lt;p&gt;As I mentioned before I have &lt;code&gt;Windows 11&lt;&#x2F;code&gt; and &lt;code&gt;Fedora Linux 38(Server Edition)&lt;&#x2F;code&gt; installed on my laptop, but mainly I&#x27;m using &lt;code&gt;Fedora Linux 38(Server Edition)&lt;&#x2F;code&gt; as my main server OS.&lt;br &#x2F;&gt;
+And Obviously, I&#x27;m using &lt;code&gt;Docker&lt;&#x2F;code&gt; and &lt;code&gt;Docker Compose&lt;&#x2F;code&gt; to run all the containers that I need, it includes:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Yacht&lt;&#x2F;code&gt; - which is a web interface for managing docker containers.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Uptime Kuma&lt;&#x2F;code&gt; - which is a web interface for monitoring docker containers.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;denver-code&#x2F;passport-status-bot&quot;&gt;Passport MFA Bot&lt;&#x2F;a&gt; - which is a telegram bot that I use for tracking my passport application status.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;NextCloud&lt;&#x2F;code&gt; - which is a cloud storage that I sue for accessing my files from &quot;My Book Duo&quot;&lt;&#x2F;li&gt;
+&lt;li&gt;And a couple of other pet-projects.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;And at the moment all running just through &lt;code&gt;docker-compose&lt;&#x2F;code&gt; command right on Fedora Linux, but I&#x27;m planning to use some sort of management tool.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;cons&quot;&gt;Cons&lt;&#x2F;h2&gt;
+&lt;p&gt;Due to the fact that I&#x27;m not an expert in DevOps and System Administration stuff I have done something wrong and have some issues with my server like not being able to access it even from my local network, after few tries or few &lt;code&gt;ping&lt;&#x2F;code&gt; requests it starts working again, but I&#x27;m not sure what is the reason for that.&lt;&#x2F;p&gt;
+&lt;p&gt;Other problem is scalability, while laptop has enough resources for my current needs, it has poorly managed software environment and security.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;upcoming-plans-to-improve-architecture&quot;&gt;Upcoming Plans to Improve Architecture&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;I might buy a new server, it&#x27;s could be either a desktop pc, rack server or microboard computer like Raspberry Pi.&lt;&#x2F;li&gt;
+&lt;li&gt;Installing &lt;code&gt;Proxmox&lt;&#x2F;code&gt; to manage VM&#x27;s.&lt;&#x2F;li&gt;
+&lt;li&gt;Installing &lt;code&gt;Kubernetes&lt;&#x2F;code&gt; to manage containers.&lt;&#x2F;li&gt;
+&lt;li&gt;Installing &lt;code&gt;Portainer&lt;&#x2F;code&gt; to manage containers. (?)&lt;&#x2F;li&gt;
+&lt;li&gt;Installing &lt;code&gt;Traefik&lt;&#x2F;code&gt; to manage reverse proxy.&lt;&#x2F;li&gt;
+&lt;li&gt;Adding local DNS server to manage .local or .home domains.&lt;&#x2F;li&gt;
+&lt;li&gt;Adding &lt;code&gt;Pi-Hole&lt;&#x2F;code&gt; to manage DNS and block ads. (Possibly merge with local DNS server)&lt;&#x2F;li&gt;
+&lt;li&gt;Adding TrueNAS&#x2F;NextCloud to manage files.&lt;&#x2F;li&gt;
+&lt;li&gt;Get new router to manage local network, as my current ISP is BT and their BT Hub is not good enough for my needs, and also as far as I know it&#x27;s not possible to get a static IP from them, not sure about Business plans, but I don&#x27;t want to pay more for that, considering to switch to other ISP.&lt;&#x2F;li&gt;
+&lt;li&gt;Setup VPN server to access my local network from outside.&lt;&#x2F;li&gt;
+&lt;li&gt;Setup &lt;code&gt;Grafana&lt;&#x2F;code&gt; to monitor my server. (?)&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;It all will be done in next couple of weeks, so stay tuned for updates, I might create a new post for each step as well as start a youtube channel to show how to do it.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;research&quot;&gt;Research&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Ansible&lt;&#x2F;code&gt; - for configuration management.&lt;&#x2F;li&gt;
+&lt;li&gt;Cheap way to get static IP and server equipment.&lt;&#x2F;li&gt;
+&lt;li&gt;Best homelab architecture.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Hello world</title>
+        <published>2023-12-15T00:00:00+00:00</published>
+        <updated>2023-12-15T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://ihorsavenko.com/posts/hello-world/"/>
+        <id>https://ihorsavenko.com/posts/hello-world/</id>
+        
+        <content type="html" xml:base="https://ihorsavenko.com/posts/hello-world/">&lt;p&gt;Welcome, this is first message on my blog.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;the-beginning&quot;&gt;The beginning&lt;&#x2F;h1&gt;
+&lt;p&gt;Looks like it using simple Markdown&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
