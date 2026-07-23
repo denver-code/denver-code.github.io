@@ -8,7 +8,7 @@ theme = "apollo"
 
 [markdown]
 highlighting = "theme"
-highlight_theme = "ayu-dark"
+highlighting_theme = "ayu-dark"
 
 [extra]
 use_cdn = false
