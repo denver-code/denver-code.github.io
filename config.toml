@@ -6,9 +6,8 @@ minify_html = true
 
 theme = "apollo"
 
-[markdown]
-highlighting = "theme"
-highlighting_theme = "ayu-dark"
+[markdown.highlighting]
+theme = "ayu-dark"
 
 [extra]
 use_cdn = false
